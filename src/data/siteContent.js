@@ -115,6 +115,23 @@ export const services = [
       "Investor Registration Form",
     ],
   },
+  {
+    slug: "minerals-mines",
+    icon: "08",
+    shortName: "Minerals & Mines",
+    name: "Minerals & Mines Services",
+    intro:
+      "End-to-end minerals and mining support covering exploration partnerships, extraction operations and international commodity trading.",
+    image:
+      "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=1200&q=80",
+    details: [
+      "Mineral Exploration Support",
+      "Mining Operations Advisory",
+      "Commodity Trading & Export",
+      "Licensing, Compliance & Legal Documentation",
+      "Equipment Sourcing & Logistics",
+    ],
+  },
 ];
 
 export const countries = ["Spain", "UAE", "UK", "Pakistan", "Qatar", "Saudi Arabia", "Canada"];

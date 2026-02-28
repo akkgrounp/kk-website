@@ -5,6 +5,7 @@ import { services } from "../data/siteContent";
 function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const baseUrl = import.meta.env.BASE_URL;
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -19,7 +20,7 @@ function SiteHeader() {
     <header className={`site-header ${isScrolled ? "scrolled" : ""}`}>
       <div className="container nav-wrap">
         <Link to="/" className="logo" onClick={closeMenu}>
-          <img src="/logo.png.jpeg" alt="KK Group of Companies logo" className="logo-mark" />
+          <img src={`${baseUrl}logo.png.jpeg`} alt="KK Group of Companies logo" className="logo-mark" />
           <span className="logo-text">
             <strong>KK Group</strong>
             <em>of Companies</em>
@@ -43,7 +44,7 @@ function SiteHeader() {
             About
           </NavLink>
           <div className="nav-dropdown">
-            <a href="/#services" onClick={closeMenu}>
+            <a href={`${baseUrl}#services`} onClick={closeMenu}>
               Services
             </a>
             <div className="nav-dropdown-menu">

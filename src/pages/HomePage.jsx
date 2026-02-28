@@ -3,6 +3,8 @@ import Seo from "../components/Seo";
 import { countries, services, whyChooseUs } from "../data/siteContent";
 
 function HomePage() {
+  const baseUrl = import.meta.env.BASE_URL;
+
   return (
     <>
       <Seo
@@ -66,7 +68,7 @@ function HomePage() {
         <div className="container seo-profile">
           <div className="seo-profile-image-wrap">
             <div className="seo-tag">International SEO Division</div>
-            <img src="/seo.png" alt="SEO Specialist" className="seo-profile-image" />
+            <img src={`${baseUrl}seo.png`} alt="SEO Specialist" className="seo-profile-image" />
             <div className="seo-image-overlay">
               <h3>Mr. Kamran Ali Khan</h3>
               <p>CEO - Global Operations</p>

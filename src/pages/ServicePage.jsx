@@ -87,6 +87,18 @@ const serviceDesign = {
       ["Transparent", "Milestone reporting and investor communication"],
     ],
   },
+  "minerals-mines": {
+    variant: "split",
+    heroTag: "Minerals & Mining Division",
+    offerTitle: "Minerals and Mining Growth Framework",
+    ctaLabel: "Consult Mining Desk",
+    metrics: ["Resource-Led", "Export Ready", "Compliance First"],
+    trust: [
+      ["Operational", "Field-to-market coordination with structured execution controls"],
+      ["Compliant", "Licensing, legal documentation and regulatory alignment support"],
+      ["Scalable", "Expansion-focused mining and commodity trade planning"],
+    ],
+  },
 };
 
 function renderOfferLayout(service, design) {
