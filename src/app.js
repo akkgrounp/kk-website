@@ -6,8 +6,12 @@ const contactRoutes = require("./routes/contactRoutes");
 const investorRoutes = require("./routes/investorRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const { notFoundHandler, errorHandler } = require("./middleware/errorMiddleware");
+const connectDB = require("./config/db");
 
 const app = express();
+connectDB().catch((error) => {
+  console.error("DB connection error:", error.message);
+});
 
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .split(",")
@@ -19,7 +23,8 @@ app.use(
     origin: (origin, callback) => {
       // Allow server-to-server and Postman/cURL requests without Origin header.
       if (!origin) return callback(null, true);
-      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      const isVercelPreview = origin.endsWith(".vercel.app");
+      if (isVercelPreview || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error("CORS policy: origin not allowed"));

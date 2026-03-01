@@ -78,6 +78,23 @@ npm run seed:admin
    npm run seed:admin
    ```
 
+## Vercel Deployment (Free Friendly)
+1. Push this backend to GitHub branch `backend-api`.
+2. Go to Vercel -> `Add New Project` -> import `kk-website` repo.
+3. Select branch: `backend-api`.
+4. Keep Root Directory as `/`.
+5. Add environment variables:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRES_IN=7d`
+   - `CLIENT_ORIGIN=http://localhost:5173,https://manalk14322-max.github.io`
+   - `ADMIN_NAME`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+6. Deploy.
+7. Test:
+   - `https://<your-vercel-domain>/api/health`
+
 ## API Endpoints
 
 ### Auth
