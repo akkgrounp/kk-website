@@ -78,11 +78,11 @@ function HomePage() {
             <span className="eyebrow">SEO Leadership</span>
             <h2>Meet our CEO, Mr. Kamran Ali Khan</h2>
             <p>
-              Meet our CEO, Mr. Kamran Ali khan, leading our global operations with 18+ years of
+              Meet our CEO, Mr. Kamran Ali khan, leading our global operations with 10+ years of
               experience in IT, real estate, automobiles, import/export, and investment sectors.
             </p>
             <div className="seo-pill-row">
-              <span>18+ Years Experience</span>
+              <span>10+ Years Experience</span>
               <span>Global Operations</span>
               <span>International Markets</span>
               <span>Growth Leadership</span>
@@ -100,7 +100,7 @@ function HomePage() {
             </ul>
             <div className="seo-metrics">
               <article>
-                <strong>18+</strong>
+                <strong>10+</strong>
                 <span>Years of Leadership</span>
               </article>
               <article>
