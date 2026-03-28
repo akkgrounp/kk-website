@@ -1,10 +1,15 @@
-function WhatsAppButton({ phoneNumber }) {
-  const cleanNumber = phoneNumber.replace(/[^\d]/g, "");
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
+
+function WhatsAppButton({
+  phoneNumber,
+  message = DEFAULT_WHATSAPP_MESSAGE,
+}) {
+  const href = buildWhatsAppUrl(phoneNumber, message);
 
   return (
     <a
       className="floating-btn whatsapp"
-      href={`https://wa.me/${cleanNumber}`}
+      href={href}
       target="_blank"
       rel="noreferrer"
       aria-label="Chat on WhatsApp"

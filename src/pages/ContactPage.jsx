@@ -1,5 +1,6 @@
 import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
 
 function ContactPage() {
   return (
@@ -18,7 +19,12 @@ function ContactPage() {
               international service coordination.
             </p>
             <div className="contact-hero-actions">
-              <a className="btn gold" href="https://wa.me/447757674489" target="_blank" rel="noreferrer">
+              <a
+                className="btn gold"
+                href={buildWhatsAppUrl("+44 7757 674489", DEFAULT_WHATSAPP_MESSAGE)}
+                target="_blank"
+                rel="noreferrer"
+              >
                 WhatsApp Direct
               </a>
               <Link className="btn outline-dark" to="/services/investment-funding">

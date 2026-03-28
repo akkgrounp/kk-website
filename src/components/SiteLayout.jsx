@@ -4,6 +4,7 @@ import SiteHeader from "./SiteHeader";
 import SiteFooter from "./SiteFooter";
 import WhatsAppButton from "./WhatsAppButton";
 import LiveChatButton from "./LiveChatButton";
+import { DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
 
 function SiteLayout() {
   const location = useLocation();
@@ -21,7 +22,10 @@ function SiteLayout() {
         <Outlet />
       </main>
       <SiteFooter />
-      <WhatsAppButton phoneNumber="+44 7757 674489" />
+      <WhatsAppButton
+        phoneNumber="+44 7757 674489"
+        message={DEFAULT_WHATSAPP_MESSAGE}
+      />
       <LiveChatButton />
     </div>
   );

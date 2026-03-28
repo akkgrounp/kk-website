@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
 
 function SiteFooter() {
   const socialLinks = [
@@ -6,7 +7,11 @@ function SiteFooter() {
     { label: "Facebook", short: "FB", href: "https://www.facebook.com/" },
     { label: "Instagram", short: "IG", href: "https://www.instagram.com/" },
     { label: "YouTube", short: "YT", href: "https://www.youtube.com/" },
-    { label: "WhatsApp", short: "WA", href: "https://wa.me/447757674489" },
+    {
+      label: "WhatsApp",
+      short: "WA",
+      href: buildWhatsAppUrl("+44 7757 674489", DEFAULT_WHATSAPP_MESSAGE),
+    },
   ];
 
   return (
