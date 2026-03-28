@@ -6,7 +6,7 @@ function SiteFooter() {
     { label: "Facebook", short: "FB", href: "https://www.facebook.com/" },
     { label: "Instagram", short: "IG", href: "https://www.instagram.com/" },
     { label: "YouTube", short: "YT", href: "https://www.youtube.com/" },
-    { label: "WhatsApp", short: "WA", href: "https://wa.me/923185756022" },
+    { label: "WhatsApp", short: "WA", href: "https://wa.me/447757674489" },
   ];
 
   return (
@@ -93,7 +93,7 @@ function SiteFooter() {
                 <strong>Email:</strong> corporate@kkgroupofcompany.com
               </p>
               <p>
-                <strong>Phone:</strong> 03185756022
+                <strong>Phone:</strong> +44 7757 674489
               </p>
               <p>
                 <strong>Offices:</strong> Spain | UAE | UK | Pakistan

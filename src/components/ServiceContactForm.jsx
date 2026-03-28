@@ -21,7 +21,7 @@ function ServiceContactForm({ serviceName, title = "Request Consultation" }) {
           </label>
           <label>
             Phone / WhatsApp
-            <input type="tel" name="phone" placeholder="03185756022" required />
+            <input type="tel" name="phone" placeholder="+44 7757 674489" required />
           </label>
           <label>
             Service Requirement
