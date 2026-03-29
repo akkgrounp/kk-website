@@ -1,42 +1,363 @@
+import { useEffect, useMemo, useState } from "react";
 import Seo from "../components/Seo";
+import { apiRequest } from "../utils/api";
+
+function formatDate(value) {
+  if (!value) return "Not available";
+  try {
+    return new Date(value).toLocaleString("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return String(value);
+  }
+}
+
+function StatusPill({ status }) {
+  const normalized = String(status || "pending").toLowerCase();
+  const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return <span className={`admin-pill ${normalized}`}>{label}</span>;
+}
 
 function AdminDashboardPage() {
+  const [auth, setAuth] = useState(() => {
+    const token = localStorage.getItem("token");
+    const userRaw = localStorage.getItem("user");
+    let user = null;
+    try {
+      user = userRaw ? JSON.parse(userRaw) : null;
+    } catch {
+      user = null;
+    }
+    return { token, user };
+  });
+
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const [dashboard, setDashboard] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [investors, setInvestors] = useState([]);
+  const [pageError, setPageError] = useState("");
+  const [pageLoading, setPageLoading] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState("");
+
+  const isAdmin = useMemo(() => auth.token && auth.user?.role === "admin", [auth]);
+
+  const loadDashboard = async (token = auth.token) => {
+    if (!token) return;
+
+    setPageLoading(true);
+    setPageError("");
+    try {
+      const [dashboardResponse, contactsResponse, investorsResponse] = await Promise.all([
+        apiRequest("/admin/dashboard", { token }),
+        apiRequest("/admin/contacts", { token }),
+        apiRequest("/admin/investors", { token }),
+      ]);
+
+      setDashboard(dashboardResponse.data || null);
+      setContacts(contactsResponse.data || []);
+      setInvestors(investorsResponse.data || []);
+    } catch (error) {
+      setPageError(error.message || "Failed to load admin data");
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadDashboard();
+    }
+  }, [isAdmin]);
+
+  const handleLoginChange = (event) => {
+    const { name, value } = event.target;
+    setLoginForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoginError("");
+    setLoginLoading(true);
+
+    try {
+      const response = await apiRequest("/auth/login", {
+        method: "POST",
+        body: loginForm,
+      });
+
+      const user = response?.data?.user;
+      const token = response?.data?.token;
+
+      if (!user || !token) {
+        throw new Error("Invalid login response from server");
+      }
+
+      if (user.role !== "admin") {
+        throw new Error("This account is not an admin account.");
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      setAuth({ token, user });
+      setLoginForm({ email: "", password: "" });
+      await loadDashboard(token);
+    } catch (error) {
+      setLoginError(error.message || "Admin login failed");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setAuth({ token: null, user: null });
+    setDashboard(null);
+    setContacts([]);
+    setInvestors([]);
+    setPageError("");
+    setLoginError("");
+  };
+
+  const handleInvestorAction = async (id, status) => {
+    if (!auth.token) return;
+    setActionLoadingId(id);
+    setPageError("");
+
+    try {
+      await apiRequest(`/admin/investor/${id}/${status}`, {
+        method: "PUT",
+        token: auth.token,
+      });
+      await loadDashboard(auth.token);
+    } catch (error) {
+      setPageError(error.message || "Failed to update investor status");
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
   return (
     <>
       <Seo
         title="Admin Dashboard | KK Group of Companies"
-        description="Future-ready admin and CRM architecture for lead and operations management."
+        description="Secure admin login and dashboard for KK Group contacts, investor applications, and approvals."
       />
+
       <section className="section inner-hero">
         <div className="container">
           <span className="eyebrow">Admin Dashboard</span>
-          <h1>Operations, CRM and Lead Management</h1>
+          <h1>Secure Operations and Lead Management</h1>
           <p>
-            This frontend includes future-ready dashboard structure for secure admin control,
-            investor onboarding and service workflow tracking.
+            Sign in with the admin account to review contact submissions, manage investor
+            applications, and keep approvals under one secure panel.
           </p>
         </div>
       </section>
 
-      <section className="section">
-        <div className="container grid three-col">
-          <article className="info-card">
-            <h3>Lead CRM Integration</h3>
-            <p>Ready to connect with HubSpot, Zoho or custom CRM APIs for pipeline management.</p>
-          </article>
-          <article className="info-card">
-            <h3>Security & SSL</h3>
-            <p>Production deployment should enforce HTTPS, secure headers and role-based access.</p>
-          </article>
-          <article className="info-card">
-            <h3>Scalable Architecture</h3>
-            <p>Service-first structure prepared for future mobile app and investor portal expansion.</p>
-          </article>
-        </div>
-      </section>
+      {!isAdmin ? (
+        <section className="section">
+          <div className="container admin-auth-layout">
+            <article className="contact-form admin-auth-card">
+              <div className="admin-card-head">
+                <div>
+                  <span className="eyebrow">Admin Login</span>
+                  <h2>Sign in to continue</h2>
+                </div>
+                <span className="admin-login-chip">Restricted Access</span>
+              </div>
+
+              <form className="stack-form" onSubmit={handleLogin}>
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="admin@example.com"
+                    value={loginForm.email}
+                    onChange={handleLoginChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter admin password"
+                    value={loginForm.password}
+                    onChange={handleLoginChange}
+                    required
+                  />
+                </label>
+
+                {loginError ? <p className="form-alert error">{loginError}</p> : null}
+
+                <button className="btn gold" type="submit" disabled={loginLoading}>
+                  {loginLoading ? "Signing in..." : "Login to Admin"}
+                </button>
+              </form>
+            </article>
+
+            <aside className="info-card admin-auth-side">
+              <span className="eyebrow">What the client can do</span>
+              <h3>Single place for all incoming business activity</h3>
+              <ul className="feature-list-modern admin-side-list">
+                <li>
+                  <h4>Contact Leads</h4>
+                  <p>View every contact form submission from the website.</p>
+                </li>
+                <li>
+                  <h4>Investor Requests</h4>
+                  <p>Review pending investor applications and update approval status.</p>
+                </li>
+                <li>
+                  <h4>Secure Access</h4>
+                  <p>Only accounts with admin role can access this dashboard.</p>
+                </li>
+              </ul>
+            </aside>
+          </div>
+        </section>
+      ) : (
+        <section className="section">
+          <div className="container admin-dashboard-shell">
+            <div className="admin-dashboard-top">
+              <div>
+                <span className="eyebrow">Signed in as admin</span>
+                <h2>{auth.user?.name || "Administrator"}</h2>
+                <p>{auth.user?.email}</p>
+              </div>
+
+              <div className="admin-dashboard-actions">
+                <button type="button" className="btn light" onClick={() => loadDashboard()}>
+                  Refresh Data
+                </button>
+                <button type="button" className="btn outline-dark" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {pageError ? <p className="form-alert error">{pageError}</p> : null}
+            {pageLoading ? <p className="admin-loading">Loading admin data...</p> : null}
+
+            <div className="admin-stat-grid">
+              <article className="info-card admin-stat-card">
+                <span className="eyebrow">Total Users</span>
+                <strong>{dashboard?.totalUsers ?? 0}</strong>
+              </article>
+              <article className="info-card admin-stat-card">
+                <span className="eyebrow">Total Contacts</span>
+                <strong>{dashboard?.totalContacts ?? 0}</strong>
+              </article>
+              <article className="info-card admin-stat-card">
+                <span className="eyebrow">Total Investors</span>
+                <strong>{dashboard?.totalInvestors ?? 0}</strong>
+              </article>
+              <article className="info-card admin-stat-card">
+                <span className="eyebrow">Approved Investors</span>
+                <strong>{dashboard?.approvedInvestors ?? 0}</strong>
+              </article>
+            </div>
+
+            <section className="admin-section">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Contact Submissions</span>
+                  <h3>{contacts.length} recent messages</h3>
+                </div>
+              </div>
+
+              {contacts.length === 0 ? (
+                <p className="admin-empty-state">No contact submissions yet.</p>
+              ) : (
+                <div className="admin-record-grid">
+                  {contacts.map((contact) => (
+                    <article className="info-card admin-record-card" key={contact._id}>
+                      <div className="admin-record-header">
+                        <div>
+                          <h4>{contact.name}</h4>
+                          <p>{contact.email}</p>
+                        </div>
+                        <span className="admin-record-time">{formatDate(contact.createdAt)}</span>
+                      </div>
+                      <div className="admin-meta-row">
+                        <span className="admin-record-meta">Service: {contact.serviceType}</span>
+                        {contact.phone ? <span className="admin-record-meta">Phone: {contact.phone}</span> : null}
+                      </div>
+                      <p className="admin-record-message">{contact.message}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Investor Applications</span>
+                  <h3>{investors.length} applications</h3>
+                </div>
+              </div>
+
+              {investors.length === 0 ? (
+                <p className="admin-empty-state">No investor applications yet.</p>
+              ) : (
+                <div className="admin-record-grid">
+                  {investors.map((investor) => (
+                    <article className="info-card admin-record-card" key={investor._id}>
+                      <div className="admin-record-header">
+                        <div>
+                          <h4>{investor.name}</h4>
+                          <p>{investor.email}</p>
+                        </div>
+                        <StatusPill status={investor.status} />
+                      </div>
+                      <div className="admin-meta-row">
+                        <span className="admin-record-meta">Phone: {investor.phone}</span>
+                        {investor.country ? <span className="admin-record-meta">Country: {investor.country}</span> : null}
+                        {investor.investmentAmount ? (
+                          <span className="admin-record-meta">
+                            Investment: {Number(investor.investmentAmount).toLocaleString()}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="admin-record-actions">
+                        <button
+                          type="button"
+                          className="btn outline-dark"
+                          onClick={() => handleInvestorAction(investor._id, "approve")}
+                          disabled={actionLoadingId === investor._id || investor.status === "approved"}
+                        >
+                          {actionLoadingId === investor._id ? "Working..." : "Approve"}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn gold"
+                          onClick={() => handleInvestorAction(investor._id, "reject")}
+                          disabled={actionLoadingId === investor._id || investor.status === "rejected"}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                      <p className="admin-record-time">{formatDate(investor.createdAt)}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </section>
+      )}
     </>
   );
 }
 
 export default AdminDashboardPage;
-
