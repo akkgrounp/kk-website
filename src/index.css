@@ -1913,6 +1913,27 @@ a {
   min-height: 100%;
 }
 
+.admin-auth-side.info-card {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(201, 162, 39, 0.16), transparent 34%),
+    linear-gradient(160deg, #0b1c2d, #132c44 72%);
+  border-color: rgba(201, 162, 39, 0.28);
+  color: #ffffff;
+  box-shadow: 0 22px 42px rgba(8, 20, 33, 0.18);
+}
+
+.admin-auth-side .eyebrow,
+.admin-auth-side h3,
+.admin-auth-side p,
+.admin-auth-side .admin-side-list h4,
+.admin-auth-side .admin-side-list p {
+  color: #ffffff;
+}
+
+.admin-auth-side .eyebrow {
+  color: #f2d889;
+}
+
 .admin-card-head,
 .admin-dashboard-top,
 .admin-section-head,
@@ -2108,15 +2129,22 @@ a {
 }
 
 .admin-side-list li {
-  background: rgba(11, 28, 45, 0.03);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(201, 162, 39, 0.24);
+}
+
+.admin-side-list li:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .admin-side-list h4 {
   margin-bottom: 0.22rem;
+  color: #fff3ca;
 }
 
 .admin-side-list p {
   margin: 0;
+  color: rgba(235, 243, 252, 0.9);
 }
 
 .investment-copy h2 {
