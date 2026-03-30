@@ -68,7 +68,7 @@ function HomePage() {
         <div className="container seo-profile">
           <div className="seo-profile-image-wrap">
             <div className="seo-tag">International SEO Division</div>
-            <img src={`${baseUrl}seo.png`} alt="SEO Specialist" className="seo-profile-image" />
+            <img src={`${baseUrl}ceo.jpg`} alt="CEO Kamran Khan" className="seo-profile-image" />
             <div className="seo-image-overlay">
               <h3>Mr. Kamran Ali Khan</h3>
               <p>CEO - Global Operations</p>
