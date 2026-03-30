@@ -590,6 +590,23 @@ a {
   transform: scale(1.03);
 }
 
+@media (min-width: 1081px) and (max-width: 1440px) {
+  .seo-profile {
+    grid-template-columns: 410px 1fr;
+  }
+
+  .seo-profile-image-wrap {
+    min-height: 560px;
+  }
+
+  .seo-profile-image {
+    object-fit: contain;
+    object-position: center center;
+    transform: none;
+    opacity: 1;
+  }
+}
+
 .seo-profile-content {
   padding: 2.1rem;
   background: linear-gradient(145deg, #ffffff, #f8fbff 45%, #f2f7fd);
