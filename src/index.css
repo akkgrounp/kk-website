@@ -2017,6 +2017,28 @@ a {
   background: rgba(255, 255, 255, 0.75);
 }
 
+.admin-note-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgba(201, 162, 39, 0.22);
+  background: linear-gradient(150deg, rgba(9, 24, 40, 0.95), rgba(16, 38, 60, 0.96));
+  color: rgba(237, 245, 253, 0.92);
+}
+
+.admin-note-card h3 {
+  margin-top: 0.25rem;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.admin-note-card p {
+  margin: 0;
+  max-width: 54ch;
+  color: rgba(237, 245, 253, 0.86);
+}
+
 .admin-stat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2038,6 +2060,103 @@ a {
 
 .admin-section-head h3 {
   margin: 0.18rem 0 0;
+}
+
+.admin-section-note {
+  margin: 0;
+  color: #5c7088;
+  font-size: 0.82rem;
+}
+
+.admin-stack-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-list-card {
+  display: grid;
+  gap: 0.72rem;
+  padding: 1.05rem 1.1rem;
+}
+
+.admin-list-card h4,
+.admin-list-card p {
+  margin: 0;
+}
+
+.admin-list-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.admin-list-head h4 {
+  font-size: 1.08rem;
+}
+
+.admin-list-head p,
+.admin-record-time,
+.admin-list-meta,
+.admin-list-message {
+  color: var(--ink-soft);
+}
+
+.admin-record-time {
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.admin-list-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.admin-mini-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.58rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #7c6320;
+  background: rgba(201, 162, 39, 0.12);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+}
+
+.admin-list-meta {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.admin-list-meta span {
+  font-size: 0.8rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(11, 28, 45, 0.04);
+  border: 1px solid rgba(11, 28, 45, 0.08);
+}
+
+.admin-list-message {
+  line-height: 1.7;
+  margin-top: -0.15rem;
+}
+
+.admin-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.admin-compact-actions .btn {
+  min-width: 0;
+  padding-inline: 1rem;
 }
 
 .admin-record-grid {
@@ -3046,6 +3165,7 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .admin-note-card,
   .admin-dashboard-top,
   .admin-section-head,
   .admin-record-header,
@@ -3141,5 +3261,23 @@ a {
 
   .admin-dashboard-actions .btn {
     width: 100%;
+  }
+
+  .admin-note-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-list-head,
+  .admin-list-side {
+    width: 100%;
+  }
+
+  .admin-list-head {
+    flex-direction: column;
+  }
+
+  .admin-list-side {
+    justify-content: flex-start;
   }
 }

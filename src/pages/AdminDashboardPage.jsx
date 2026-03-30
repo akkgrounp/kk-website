@@ -14,10 +14,21 @@ function formatDate(value) {
   }
 }
 
+function getSnippet(value, maxLength = 180) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "No message provided.";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
+}
+
 function StatusPill({ status }) {
   const normalized = String(status || "pending").toLowerCase();
   const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
   return <span className={`admin-pill ${normalized}`}>{label}</span>;
+}
+
+function MiniChip({ children }) {
+  return <span className="admin-mini-chip">{children}</span>;
 }
 
 function AdminDashboardPage() {
@@ -245,6 +256,17 @@ function AdminDashboardPage() {
               </div>
             </div>
 
+            <div className="admin-note-card info-card">
+              <div>
+                <span className="eyebrow">Quick Review Panel</span>
+                <h3>Simple workspace for contacts, investors, and approvals.</h3>
+              </div>
+              <p>
+                Refresh whenever you want the latest submissions. Review contact leads first,
+                then approve or reject investor applications from the same screen.
+              </p>
+            </div>
+
             {pageError ? <p className="form-alert error">{pageError}</p> : null}
             {pageLoading ? <p className="admin-loading">Loading admin data...</p> : null}
 
@@ -273,26 +295,30 @@ function AdminDashboardPage() {
                   <span className="eyebrow">Contact Submissions</span>
                   <h3>{contacts.length} recent messages</h3>
                 </div>
+                <p className="admin-section-note">Newest entries appear first.</p>
               </div>
 
               {contacts.length === 0 ? (
                 <p className="admin-empty-state">No contact submissions yet.</p>
               ) : (
-                <div className="admin-record-grid">
+                <div className="admin-stack-list">
                   {contacts.map((contact) => (
-                    <article className="info-card admin-record-card" key={contact._id}>
-                      <div className="admin-record-header">
+                    <article className="info-card admin-list-card" key={contact._id}>
+                      <div className="admin-list-head">
                         <div>
                           <h4>{contact.name}</h4>
                           <p>{contact.email}</p>
                         </div>
-                        <span className="admin-record-time">{formatDate(contact.createdAt)}</span>
+                        <div className="admin-list-side">
+                          <MiniChip>{contact.serviceType || "General"}</MiniChip>
+                          <span className="admin-record-time">{formatDate(contact.createdAt)}</span>
+                        </div>
                       </div>
-                      <div className="admin-meta-row">
-                        <span className="admin-record-meta">Service: {contact.serviceType}</span>
-                        {contact.phone ? <span className="admin-record-meta">Phone: {contact.phone}</span> : null}
+                      <div className="admin-list-meta">
+                        {contact.phone ? <span>Phone: {contact.phone}</span> : null}
+                        <span>Service: {contact.serviceType || "General"}</span>
                       </div>
-                      <p className="admin-record-message">{contact.message}</p>
+                      <p className="admin-list-message">{getSnippet(contact.message)}</p>
                     </article>
                   ))}
                 </div>
@@ -305,31 +331,38 @@ function AdminDashboardPage() {
                   <span className="eyebrow">Investor Applications</span>
                   <h3>{investors.length} applications</h3>
                 </div>
+                <p className="admin-section-note">Approve or reject directly from each application card.</p>
               </div>
 
               {investors.length === 0 ? (
                 <p className="admin-empty-state">No investor applications yet.</p>
               ) : (
-                <div className="admin-record-grid">
+                <div className="admin-stack-list">
                   {investors.map((investor) => (
-                    <article className="info-card admin-record-card" key={investor._id}>
-                      <div className="admin-record-header">
+                    <article className="info-card admin-list-card" key={investor._id}>
+                      <div className="admin-list-head">
                         <div>
                           <h4>{investor.name}</h4>
                           <p>{investor.email}</p>
                         </div>
                         <StatusPill status={investor.status} />
                       </div>
-                      <div className="admin-meta-row">
-                        <span className="admin-record-meta">Phone: {investor.phone}</span>
-                        {investor.country ? <span className="admin-record-meta">Country: {investor.country}</span> : null}
+                      <div className="admin-list-meta">
+                        <span>Phone: {investor.phone}</span>
+                        {investor.country ? <span>Country: {investor.country}</span> : null}
                         {investor.investmentAmount ? (
-                          <span className="admin-record-meta">
+                          <span>
                             Investment: {Number(investor.investmentAmount).toLocaleString()}
                           </span>
                         ) : null}
+                        <span>{formatDate(investor.createdAt)}</span>
                       </div>
-                      <div className="admin-record-actions">
+                      <p className="admin-list-message">
+                        {investor.country
+                          ? `Application received from ${investor.country}.`
+                          : "Investor application received and ready for review."}
+                      </p>
+                      <div className="admin-compact-actions">
                         <button
                           type="button"
                           className="btn outline-dark"
@@ -347,7 +380,6 @@ function AdminDashboardPage() {
                           Reject
                         </button>
                       </div>
-                      <p className="admin-record-time">{formatDate(investor.createdAt)}</p>
                     </article>
                   ))}
                 </div>
