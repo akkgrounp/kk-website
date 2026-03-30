@@ -1,7 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { apiRequest } from "../utils/api";
 import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
 
 function SiteFooter() {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+
   const socialLinks = [
     { label: "LinkedIn", short: "IN", href: "https://www.linkedin.com/" },
     { label: "Facebook", short: "FB", href: "https://www.facebook.com/" },
@@ -13,6 +19,29 @@ function SiteFooter() {
       href: buildWhatsAppUrl("+44 7757 674489", DEFAULT_WHATSAPP_MESSAGE),
     },
   ];
+
+  const handleNewsletterSubmit = async (event) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!email) return;
+
+    setNewsletterLoading(true);
+    setNewsletterStatus("");
+
+    try {
+      const response = await apiRequest("/newsletter/subscribe", {
+        method: "POST",
+        body: { email },
+      });
+
+      setNewsletterStatus(response?.message || "Thanks for subscribing.");
+      setNewsletterEmail("");
+    } catch (error) {
+      setNewsletterStatus(error.message || "Subscription failed.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   return (
     <footer className="footer">
@@ -86,16 +115,26 @@ function SiteFooter() {
           <aside className="footer-contact">
             <div className="footer-newsletter">
               <h4>Subscribe to our newsletter</h4>
-              <form onSubmit={(event) => event.preventDefault()}>
-                <input type="email" placeholder="E-mail" aria-label="Email address" />
-                <button type="submit" aria-label="Subscribe">{">"}</button>
+              <form onSubmit={handleNewsletterSubmit}>
+                <input
+                  type="email"
+                  placeholder="E-mail"
+                  aria-label="Email address"
+                  value={newsletterEmail}
+                  onChange={(event) => setNewsletterEmail(event.target.value)}
+                  required
+                />
+                <button type="submit" aria-label="Subscribe" disabled={newsletterLoading}>
+                  {newsletterLoading ? "..." : ">"}
+                </button>
               </form>
+              {newsletterStatus ? <p className="footer-newsletter-status">{newsletterStatus}</p> : null}
             </div>
 
             <div className="footer-contact-list">
               <h4>Contact Us</h4>
               <p>
-                <strong>Email:</strong> corporate@kkgroupofcompany.com
+                <strong>Email:</strong> Akkgroup130@gmail.com
               </p>
               <p>
                 <strong>Phone:</strong> +44 7757 674489

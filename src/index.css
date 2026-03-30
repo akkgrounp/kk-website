@@ -2022,7 +2022,7 @@ a {
 
 .admin-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.9rem;
 }
 
@@ -2878,6 +2878,19 @@ a {
 
 .footer-newsletter button:hover {
   background: rgba(201, 162, 39, 0.3);
+}
+
+.footer-newsletter button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.footer-newsletter-status {
+  margin: 0.45rem 0 0;
+  max-width: 330px;
+  color: #ffe7a5;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .footer-contact-list p + p {

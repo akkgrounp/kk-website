@@ -80,7 +80,7 @@ function ContactPage() {
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>Email</h3>
-                <p>corporate@kkgroupofcompany.com</p>
+                <p>Akkgroup130@gmail.com</p>
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>Phone</h3>

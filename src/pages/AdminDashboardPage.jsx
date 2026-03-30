@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import Seo from "../components/Seo";
 import { apiRequest } from "../utils/api";
 
@@ -18,7 +18,7 @@ function getSnippet(value, maxLength = 180) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   if (!text) return "No message provided.";
   if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1)}…`;
+  return `${text.slice(0, maxLength - 1)}...`;
 }
 
 function StatusPill({ status }) {
@@ -51,6 +51,7 @@ function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [investors, setInvestors] = useState([]);
+  const [newsletters, setNewsletters] = useState([]);
   const [pageError, setPageError] = useState("");
   const [pageLoading, setPageLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState("");
@@ -63,15 +64,18 @@ function AdminDashboardPage() {
     setPageLoading(true);
     setPageError("");
     try {
-      const [dashboardResponse, contactsResponse, investorsResponse] = await Promise.all([
-        apiRequest("/admin/dashboard", { token }),
-        apiRequest("/admin/contacts", { token }),
-        apiRequest("/admin/investors", { token }),
-      ]);
+      const [dashboardResponse, contactsResponse, investorsResponse, newslettersResponse] =
+        await Promise.all([
+          apiRequest("/admin/dashboard", { token }),
+          apiRequest("/admin/contacts", { token }),
+          apiRequest("/admin/investors", { token }),
+          apiRequest("/admin/newsletters", { token }),
+        ]);
 
       setDashboard(dashboardResponse.data || null);
       setContacts(contactsResponse.data || []);
       setInvestors(investorsResponse.data || []);
+      setNewsletters(newslettersResponse.data || []);
     } catch (error) {
       setPageError(error.message || "Failed to load admin data");
     } finally {
@@ -131,6 +135,7 @@ function AdminDashboardPage() {
     setDashboard(null);
     setContacts([]);
     setInvestors([]);
+    setNewsletters([]);
     setPageError("");
     setLoginError("");
   };
@@ -229,6 +234,10 @@ function AdminDashboardPage() {
                   <p>Review pending investor applications and update approval status.</p>
                 </li>
                 <li>
+                  <h4>Newsletter Subscribers</h4>
+                  <p>See every email captured from the footer subscribe form.</p>
+                </li>
+                <li>
                   <h4>Secure Access</h4>
                   <p>Only accounts with admin role can access this dashboard.</p>
                 </li>
@@ -259,7 +268,7 @@ function AdminDashboardPage() {
             <div className="admin-note-card info-card">
               <div>
                 <span className="eyebrow">Quick Review Panel</span>
-                <h3>Simple workspace for contacts, investors, and approvals.</h3>
+                <h3>Simple workspace for contacts, investors, newsletters and approvals.</h3>
               </div>
               <p>
                 Refresh whenever you want the latest submissions. Review contact leads first,
@@ -286,6 +295,10 @@ function AdminDashboardPage() {
               <article className="info-card admin-stat-card">
                 <span className="eyebrow">Approved Investors</span>
                 <strong>{dashboard?.approvedInvestors ?? 0}</strong>
+              </article>
+              <article className="info-card admin-stat-card">
+                <span className="eyebrow">Newsletter Subscribers</span>
+                <strong>{dashboard?.totalSubscribers ?? newsletters.length ?? 0}</strong>
               </article>
             </div>
 
@@ -379,6 +392,38 @@ function AdminDashboardPage() {
                         >
                           Reject
                         </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-section">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Newsletter Subscribers</span>
+                  <h3>{newsletters.length} email signups</h3>
+                </div>
+                <p className="admin-section-note">Emails captured from the footer newsletter form.</p>
+              </div>
+
+              {newsletters.length === 0 ? (
+                <p className="admin-empty-state">No newsletter subscribers yet.</p>
+              ) : (
+                <div className="admin-stack-list">
+                  {newsletters.map((subscriber) => (
+                    <article className="info-card admin-list-card" key={subscriber._id}>
+                      <div className="admin-list-head">
+                        <div>
+                          <h4>{subscriber.email}</h4>
+                          <p>Subscribed via website newsletter form.</p>
+                        </div>
+                        <span className="admin-record-time">{formatDate(subscriber.createdAt)}</span>
+                      </div>
+                      <div className="admin-list-meta">
+                        <span>Email captured</span>
+                        <span>Public subscription</span>
                       </div>
                     </article>
                   ))}
