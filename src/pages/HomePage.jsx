@@ -67,12 +67,7 @@ function HomePage() {
       <section className="section">
         <div className="container seo-profile">
           <div className="seo-profile-image-wrap">
-            <div className="seo-tag">International SEO Division</div>
             <img src={`${baseUrl}ceo.jpg`} alt="CEO Kamran Khan" className="seo-profile-image" />
-            <div className="seo-image-overlay">
-              <h3>Mr. Kamran Ali Khan</h3>
-              <p>CEO - Global Operations</p>
-            </div>
           </div>
           <div className="seo-profile-content">
             <span className="eyebrow">SEO Leadership</span>
