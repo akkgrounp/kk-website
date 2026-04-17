@@ -1,8 +1,56 @@
+import { useState } from "react";
 import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
-import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from "../utils/whatsapp";
+import { apiRequest } from "../utils/apiClient";
 
 function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+  });
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInput = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      setIsSubmitting(true);
+      setStatusMessage("");
+      await apiRequest("/contact", {
+        method: "POST",
+        body: {
+          name: formData.name,
+          email: formData.email,
+          message: `${formData.message}\nPhone: ${formData.phone}`,
+          serviceType: formData.subject,
+        },
+      });
+      setStatusType("success");
+      setStatusMessage("Thank you. Your message has been submitted. Our team will contact you shortly.");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error) {
+      setStatusType("error");
+      setStatusMessage(error.message || "Failed to submit form. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Seo
@@ -19,12 +67,7 @@ function ContactPage() {
               international service coordination.
             </p>
             <div className="contact-hero-actions">
-              <a
-                className="btn gold"
-                href={buildWhatsAppUrl("+44 7757 674489", DEFAULT_WHATSAPP_MESSAGE)}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="btn gold" href="https://wa.me/923185756022" target="_blank" rel="noreferrer">
                 WhatsApp Direct
               </a>
               <Link className="btn outline-dark" to="/services/investment-funding">
@@ -80,48 +123,89 @@ function ContactPage() {
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>Email</h3>
-                <p>Akkgroup130@gmail.com</p>
+                <p>corporate@kkgroupofcompany.com</p>
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>Phone</h3>
-                <p>+44 7757 674489</p>
+                <p>03185756022</p>
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>WhatsApp</h3>
-                <p>+44 7757 674489</p>
+                <p>03185756022</p>
               </article>
             </div>
           </div>
 
-          <form className="contact-form contact-form-modern" action="#" method="post">
+          <form
+            className="contact-form contact-form-modern"
+            action="#"
+            method="post"
+            onSubmit={handleSubmit}
+          >
             <h3>Send Us Your Requirement</h3>
             <div className="form-row">
               <label>
                 Name
-                <input type="text" required placeholder="Your full name" />
+                <input
+                  type="text"
+                  required
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInput}
+                  placeholder="Your full name"
+                />
               </label>
               <label>
                 Email
-                <input type="email" required placeholder="your@email.com" />
+                <input
+                  type="email"
+                  required
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInput}
+                  placeholder="your@email.com"
+                />
               </label>
             </div>
             <div className="form-row">
               <label>
                 Phone
-                <input type="tel" required placeholder="+44 7757 674489" />
+                <input
+                  type="tel"
+                  required
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInput}
+                  placeholder="03185756022"
+                />
               </label>
               <label>
                 Subject
-                <input type="text" required placeholder="How can we help?" />
+                <input
+                  type="text"
+                  required
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInput}
+                  placeholder="How can we help?"
+                />
               </label>
             </div>
             <label>
               Message
-              <textarea rows="5" required placeholder="Write your message" />
+              <textarea
+                rows="5"
+                required
+                name="message"
+                value={formData.message}
+                onChange={handleInput}
+                placeholder="Write your message"
+              />
             </label>
-            <button type="submit" className="btn gold">
-              Send Message
+            <button type="submit" className="btn gold" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Send Message"}
             </button>
+            {statusMessage ? <p className={`form-status ${statusType}`}>{statusMessage}</p> : null}
           </form>
         </div>
       </section>

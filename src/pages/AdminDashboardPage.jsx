@@ -1,160 +1,108 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Seo from "../components/Seo";
-import { apiRequest } from "../utils/api";
-
-function formatDate(value) {
-  if (!value) return "Not available";
-  try {
-    return new Date(value).toLocaleString("en-GB", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return String(value);
-  }
-}
-
-function getSnippet(value, maxLength = 180) {
-  const text = String(value || "").replace(/\s+/g, " ").trim();
-  if (!text) return "No message provided.";
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1)}...`;
-}
-
-function StatusPill({ status }) {
-  const normalized = String(status || "pending").toLowerCase();
-  const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
-  return <span className={`admin-pill ${normalized}`}>{label}</span>;
-}
-
-function MiniChip({ children }) {
-  return <span className="admin-mini-chip">{children}</span>;
-}
+import { apiRequest, clearAuthSession, getAuthUser, setAuthSession } from "../utils/apiClient";
 
 function AdminDashboardPage() {
-  const [auth, setAuth] = useState(() => {
-    const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
-    let user = null;
-    try {
-      user = userRaw ? JSON.parse(userRaw) : null;
-    } catch {
-      user = null;
-    }
-    return { token, user };
-  });
-
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [loginError, setLoginError] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [authUser, setAuthUser] = useState(() => getAuthUser());
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("success");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   const [dashboard, setDashboard] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [investors, setInvestors] = useState([]);
-  const [newsletters, setNewsletters] = useState([]);
-  const [pageError, setPageError] = useState("");
-  const [pageLoading, setPageLoading] = useState(false);
-  const [actionLoadingId, setActionLoadingId] = useState("");
+  const pendingInvestors = investors.filter((investor) => investor.status === "pending").length;
 
-  const isAdmin = useMemo(() => auth.token && auth.user?.role === "admin", [auth]);
+  const isAdmin = authUser?.role === "admin";
 
-  const loadDashboard = async (token = auth.token) => {
-    if (!token) return;
+  const handleInput = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    setPageLoading(true);
-    setPageError("");
+  const loadAdminData = async () => {
+    if (!isAdmin) return;
     try {
-      const [dashboardResponse, contactsResponse, investorsResponse, newslettersResponse] =
-        await Promise.all([
-          apiRequest("/admin/dashboard", { token }),
-          apiRequest("/admin/contacts", { token }),
-          apiRequest("/admin/investors", { token }),
-          apiRequest("/admin/newsletters", { token }),
-        ]);
+      setIsLoadingData(true);
+      setStatusMessage("");
+      const [dashboardRes, contactsRes, investorsRes] = await Promise.all([
+        apiRequest("/admin/dashboard"),
+        apiRequest("/admin/contacts"),
+        apiRequest("/admin/investors"),
+      ]);
 
-      setDashboard(dashboardResponse.data || null);
-      setContacts(contactsResponse.data || []);
-      setInvestors(investorsResponse.data || []);
-      setNewsletters(newslettersResponse.data || []);
+      setDashboard(dashboardRes.data);
+      setContacts(contactsRes.data || []);
+      setInvestors(investorsRes.data || []);
     } catch (error) {
-      setPageError(error.message || "Failed to load admin data");
+      setStatusType("error");
+      setStatusMessage(error.message || "Failed to load admin data.");
     } finally {
-      setPageLoading(false);
+      setIsLoadingData(false);
     }
   };
 
   useEffect(() => {
-    if (isAdmin) {
-      loadDashboard();
-    }
+    loadAdminData();
   }, [isAdmin]);
-
-  const handleLoginChange = (event) => {
-    const { name, value } = event.target;
-    setLoginForm((current) => ({ ...current, [name]: value }));
-  };
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    setLoginError("");
-    setLoginLoading(true);
-
     try {
+      setIsSubmitting(true);
+      setStatusMessage("");
       const response = await apiRequest("/auth/login", {
         method: "POST",
-        body: loginForm,
+        body: formData,
       });
-
-      const user = response?.data?.user;
-      const token = response?.data?.token;
-
-      if (!user || !token) {
-        throw new Error("Invalid login response from server");
+      if (response?.data?.user?.role !== "admin") {
+        throw new Error("Only admin account can access this page.");
       }
-
-      if (user.role !== "admin") {
-        throw new Error("This account is not an admin account.");
-      }
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setAuth({ token, user });
-      setLoginForm({ email: "", password: "" });
-      await loadDashboard(token);
+      setAuthSession(response.data.token, response.data.user);
+      setAuthUser(response.data.user);
+      setFormData({ email: "", password: "" });
+      setStatusType("success");
+      setStatusMessage("Admin login successful.");
     } catch (error) {
-      setLoginError(error.message || "Admin login failed");
+      clearAuthSession();
+      setAuthUser(null);
+      setStatusType("error");
+      setStatusMessage(error.message || "Admin login failed.");
     } finally {
-      setLoginLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setAuth({ token: null, user: null });
+    clearAuthSession();
+    setAuthUser(null);
     setDashboard(null);
     setContacts([]);
     setInvestors([]);
-    setNewsletters([]);
-    setPageError("");
-    setLoginError("");
+    setStatusType("success");
+    setStatusMessage("Logged out successfully.");
   };
 
-  const handleInvestorAction = async (id, status) => {
-    if (!auth.token) return;
-    setActionLoadingId(id);
-    setPageError("");
+  const updateInvestorStatus = async (id, status) => {
+    const target = investors.find((item) => item._id === id);
+    if (target && target.status === status) {
+      setStatusType("success");
+      setStatusMessage(`Investor is already ${status}.`);
+      return;
+    }
 
     try {
       await apiRequest(`/admin/investor/${id}/${status}`, {
         method: "PUT",
-        token: auth.token,
       });
-      await loadDashboard(auth.token);
+      setStatusType("success");
+      setStatusMessage(`Investor application ${status}.`);
+      await loadAdminData();
     } catch (error) {
-      setPageError(error.message || "Failed to update investor status");
-    } finally {
-      setActionLoadingId("");
+      setStatusType("error");
+      setStatusMessage(error.message || "Failed to update investor status.");
     }
   };
 
@@ -162,276 +110,190 @@ function AdminDashboardPage() {
     <>
       <Seo
         title="Admin Dashboard | KK Group of Companies"
-        description="Secure admin login and dashboard for KK Group contacts, investor applications, and approvals."
+        description="Admin operations dashboard with live contact and investor management."
       />
-
       <section className="section inner-hero">
         <div className="container">
           <span className="eyebrow">Admin Dashboard</span>
-          <h1>Secure Operations and Lead Management</h1>
-          <p>
-            Sign in with the admin account to review contact submissions, manage investor
-            applications, and keep approvals under one secure panel.
-          </p>
+          <h1>Operations, CRM and Lead Management</h1>
+          <p>Manage website contacts, investor applications and approval workflows.</p>
         </div>
       </section>
 
       {!isAdmin ? (
         <section className="section">
-          <div className="container admin-auth-layout">
-            <article className="contact-form admin-auth-card">
-              <div className="admin-card-head">
-                <div>
-                  <span className="eyebrow">Admin Login</span>
-                  <h2>Sign in to continue</h2>
-                </div>
-                <span className="admin-login-chip">Restricted Access</span>
-              </div>
-
-              <form className="stack-form" onSubmit={handleLogin}>
-                <label>
-                  Email
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="admin@example.com"
-                    value={loginForm.email}
-                    onChange={handleLoginChange}
-                    required
-                  />
-                </label>
-
-                <label>
-                  Password
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter admin password"
-                    value={loginForm.password}
-                    onChange={handleLoginChange}
-                    required
-                  />
-                </label>
-
-                {loginError ? <p className="form-alert error">{loginError}</p> : null}
-
-                <button className="btn gold" type="submit" disabled={loginLoading}>
-                  {loginLoading ? "Signing in..." : "Login to Admin"}
-                </button>
-              </form>
-            </article>
-
-            <aside className="info-card admin-auth-side">
-              <span className="eyebrow">What the client can do</span>
-              <h3>Single place for all incoming business activity</h3>
-              <ul className="feature-list-modern admin-side-list">
-                <li>
-                  <h4>Contact Leads</h4>
-                  <p>View every contact form submission from the website.</p>
-                </li>
-                <li>
-                  <h4>Investor Requests</h4>
-                  <p>Review pending investor applications and update approval status.</p>
-                </li>
-                <li>
-                  <h4>Newsletter Subscribers</h4>
-                  <p>See every email captured from the footer subscribe form.</p>
-                </li>
-                <li>
-                  <h4>Secure Access</h4>
-                  <p>Only accounts with admin role can access this dashboard.</p>
-                </li>
-              </ul>
-            </aside>
+          <div className="container narrow">
+            <form className="contact-form" onSubmit={handleLogin}>
+              <h3>Admin Login</h3>
+              <label>
+                Admin Email
+                <input
+                  type="email"
+                  required
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInput}
+                  placeholder="admin@company.com"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  type="password"
+                  required
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInput}
+                  placeholder="Enter password"
+                />
+              </label>
+              <button type="submit" className="btn gold" disabled={isSubmitting}>
+                {isSubmitting ? "Signing in..." : "Login as Admin"}
+              </button>
+              {statusMessage ? <p className={`form-status ${statusType}`}>{statusMessage}</p> : null}
+            </form>
           </div>
         </section>
       ) : (
-        <section className="section">
-          <div className="container admin-dashboard-shell">
-            <div className="admin-dashboard-top">
-              <div>
-                <span className="eyebrow">Signed in as admin</span>
-                <h2>{auth.user?.name || "Administrator"}</h2>
-                <p>{auth.user?.email}</p>
-              </div>
-
-              <div className="admin-dashboard-actions">
-                <button type="button" className="btn light" onClick={() => loadDashboard()}>
-                  Refresh Data
-                </button>
-                <button type="button" className="btn outline-dark" onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
+        <>
+          <section className="section">
+            <div className="container admin-actions">
+              <button type="button" className="btn outline-dark" onClick={loadAdminData} disabled={isLoadingData}>
+                {isLoadingData ? "Refreshing..." : "Refresh Data"}
+              </button>
+              <button type="button" className="btn gold" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
-
-            <div className="admin-note-card info-card">
-              <div>
-                <span className="eyebrow">Quick Review Panel</span>
-                <h3>Simple workspace for contacts, investors, newsletters and approvals.</h3>
-              </div>
-              <p>
-                Refresh whenever you want the latest submissions. Review contact leads first,
-                then approve or reject investor applications from the same screen.
-              </p>
-            </div>
-
-            {pageError ? <p className="form-alert error">{pageError}</p> : null}
-            {pageLoading ? <p className="admin-loading">Loading admin data...</p> : null}
-
-            <div className="admin-stat-grid">
-              <article className="info-card admin-stat-card">
-                <span className="eyebrow">Total Users</span>
-                <strong>{dashboard?.totalUsers ?? 0}</strong>
+            <div className="container admin-alert-strip">
+              <article className="admin-alert-item">
+                <span>New Contacts</span>
+                <strong>{contacts.length}</strong>
               </article>
-              <article className="info-card admin-stat-card">
-                <span className="eyebrow">Total Contacts</span>
-                <strong>{dashboard?.totalContacts ?? 0}</strong>
-              </article>
-              <article className="info-card admin-stat-card">
-                <span className="eyebrow">Total Investors</span>
-                <strong>{dashboard?.totalInvestors ?? 0}</strong>
-              </article>
-              <article className="info-card admin-stat-card">
-                <span className="eyebrow">Approved Investors</span>
-                <strong>{dashboard?.approvedInvestors ?? 0}</strong>
-              </article>
-              <article className="info-card admin-stat-card">
-                <span className="eyebrow">Newsletter Subscribers</span>
-                <strong>{dashboard?.totalSubscribers ?? newsletters.length ?? 0}</strong>
+              <article className="admin-alert-item pending">
+                <span>Pending Investors</span>
+                <strong>{pendingInvestors}</strong>
               </article>
             </div>
+            <div className="container grid three-col">
+              <article className="info-card">
+                <h3>Total Users</h3>
+                <p className="admin-kpi">{dashboard?.totalUsers ?? 0}</p>
+              </article>
+              <article className="info-card">
+                <h3>Total Contacts</h3>
+                <p className="admin-kpi">{dashboard?.totalContacts ?? 0}</p>
+              </article>
+              <article className="info-card">
+                <h3>Total Investors</h3>
+                <p className="admin-kpi">{dashboard?.totalInvestors ?? 0}</p>
+              </article>
+            </div>
+            <div className="container grid three-col" style={{ marginTop: "1rem" }}>
+              <article className="info-card">
+                <h3>Approved Investors</h3>
+                <p className="admin-kpi">{dashboard?.approvedInvestors ?? 0}</p>
+              </article>
+            </div>
+            {statusMessage ? <p className={`form-status ${statusType}`}>{statusMessage}</p> : null}
+          </section>
 
-            <section className="admin-section">
-              <div className="admin-section-head">
-                <div>
-                  <span className="eyebrow">Contact Submissions</span>
-                  <h3>{contacts.length} recent messages</h3>
-                </div>
-                <p className="admin-section-note">Newest entries appear first.</p>
+          <section className="section">
+            <div className="container">
+              <div className="section-head">
+                <span className="eyebrow">Contact Submissions</span>
+                <h2>
+                  Latest Contacts <span className="admin-badge">{contacts.length}</span>
+                </h2>
               </div>
-
-              {contacts.length === 0 ? (
-                <p className="admin-empty-state">No contact submissions yet.</p>
-              ) : (
-                <div className="admin-stack-list">
-                  {contacts.map((contact) => (
-                    <article className="info-card admin-list-card" key={contact._id}>
-                      <div className="admin-list-head">
-                        <div>
-                          <h4>{contact.name}</h4>
-                          <p>{contact.email}</p>
-                        </div>
-                        <div className="admin-list-side">
-                          <MiniChip>{contact.serviceType || "General"}</MiniChip>
-                          <span className="admin-record-time">{formatDate(contact.createdAt)}</span>
-                        </div>
+              <div className="admin-leads-wrap">
+                {contacts.length === 0 ? (
+                  <article className="info-card">
+                    <p>No contact submissions found.</p>
+                  </article>
+                ) : (
+                  contacts.map((contact) => (
+                    <article className="info-card admin-lead-card" key={contact._id}>
+                      <div className="admin-lead-head">
+                        <h3>{contact.name}</h3>
+                        <span>{new Date(contact.createdAt).toLocaleString()}</span>
                       </div>
-                      <div className="admin-list-meta">
-                        {contact.phone ? <span>Phone: {contact.phone}</span> : null}
-                        <span>Service: {contact.serviceType || "General"}</span>
-                      </div>
-                      <p className="admin-list-message">{getSnippet(contact.message)}</p>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="admin-section">
-              <div className="admin-section-head">
-                <div>
-                  <span className="eyebrow">Investor Applications</span>
-                  <h3>{investors.length} applications</h3>
-                </div>
-                <p className="admin-section-note">Approve or reject directly from each application card.</p>
-              </div>
-
-              {investors.length === 0 ? (
-                <p className="admin-empty-state">No investor applications yet.</p>
-              ) : (
-                <div className="admin-stack-list">
-                  {investors.map((investor) => (
-                    <article className="info-card admin-list-card" key={investor._id}>
-                      <div className="admin-list-head">
-                        <div>
-                          <h4>{investor.name}</h4>
-                          <p>{investor.email}</p>
-                        </div>
-                        <StatusPill status={investor.status} />
-                      </div>
-                      <div className="admin-list-meta">
-                        <span>Phone: {investor.phone}</span>
-                        {investor.country ? <span>Country: {investor.country}</span> : null}
-                        {investor.investmentAmount ? (
-                          <span>
-                            Investment: {Number(investor.investmentAmount).toLocaleString()}
-                          </span>
-                        ) : null}
-                        <span>{formatDate(investor.createdAt)}</span>
-                      </div>
-                      <p className="admin-list-message">
-                        {investor.country
-                          ? `Application received from ${investor.country}.`
-                          : "Investor application received and ready for review."}
+                      <p>
+                        <strong>Email:</strong> {contact.email}
                       </p>
-                      <div className="admin-compact-actions">
+                      <p>
+                        <strong>Service:</strong> {contact.serviceType}
+                      </p>
+                      <p>
+                        <strong>Message:</strong> {contact.message}
+                      </p>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section className="section">
+            <div className="container">
+              <div className="section-head">
+                <span className="eyebrow">Investor Applications</span>
+                <h2>
+                  Review and Approve <span className="admin-badge warning">{pendingInvestors}</span>
+                </h2>
+              </div>
+              <div className="admin-leads-wrap">
+                {investors.length === 0 ? (
+                  <article className="info-card">
+                    <p>No investor applications found.</p>
+                  </article>
+                ) : (
+                  investors.map((investor) => (
+                    <article className="info-card admin-lead-card" key={investor._id}>
+                      <div className="admin-lead-head">
+                        <h3>{investor.name}</h3>
+                        <span>{new Date(investor.createdAt).toLocaleString()}</span>
+                      </div>
+                      <p>
+                        <strong>Email:</strong> {investor.email}
+                      </p>
+                      <p>
+                        <strong>Phone:</strong> {investor.phone}
+                      </p>
+                      <p>
+                        <strong>Country:</strong> {investor.country || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Investment:</strong> {investor.investmentAmount || 0}
+                      </p>
+                      <p>
+                        <strong>Status:</strong> {investor.status}
+                      </p>
+                      <div className="admin-actions">
                         <button
                           type="button"
                           className="btn outline-dark"
-                          onClick={() => handleInvestorAction(investor._id, "approve")}
-                          disabled={actionLoadingId === investor._id || investor.status === "approved"}
+                          onClick={() => updateInvestorStatus(investor._id, "approve")}
+                          disabled={investor.status === "approved"}
                         >
-                          {actionLoadingId === investor._id ? "Working..." : "Approve"}
+                          {investor.status === "approved" ? "Approved" : "Approve"}
                         </button>
                         <button
                           type="button"
                           className="btn gold"
-                          onClick={() => handleInvestorAction(investor._id, "reject")}
-                          disabled={actionLoadingId === investor._id || investor.status === "rejected"}
+                          onClick={() => updateInvestorStatus(investor._id, "reject")}
+                          disabled={investor.status === "rejected"}
                         >
-                          Reject
+                          {investor.status === "rejected" ? "Rejected" : "Reject"}
                         </button>
                       </div>
                     </article>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="admin-section">
-              <div className="admin-section-head">
-                <div>
-                  <span className="eyebrow">Newsletter Subscribers</span>
-                  <h3>{newsletters.length} email signups</h3>
-                </div>
-                <p className="admin-section-note">Emails captured from the footer newsletter form.</p>
+                  ))
+                )}
               </div>
-
-              {newsletters.length === 0 ? (
-                <p className="admin-empty-state">No newsletter subscribers yet.</p>
-              ) : (
-                <div className="admin-stack-list">
-                  {newsletters.map((subscriber) => (
-                    <article className="info-card admin-list-card" key={subscriber._id}>
-                      <div className="admin-list-head">
-                        <div>
-                          <h4>{subscriber.email}</h4>
-                          <p>Subscribed via website newsletter form.</p>
-                        </div>
-                        <span className="admin-record-time">{formatDate(subscriber.createdAt)}</span>
-                      </div>
-                      <div className="admin-list-meta">
-                        <span>Email captured</span>
-                        <span>Public subscription</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        </section>
+            </div>
+          </section>
+        </>
       )}
     </>
   );

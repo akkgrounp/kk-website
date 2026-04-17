@@ -1,6 +1,53 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo";
 import { countries, services, whyChooseUs } from "../data/siteContent";
+
+function CountUp({ end, suffix = "", duration = 1200 }) {
+  const [value, setValue] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    let start = 0;
+    const startTime = performance.now();
+
+    const animate = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const next = Math.floor(progress * end);
+      if (next !== start) {
+        start = next;
+        setValue(next);
+      }
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }, [isVisible, end, duration]);
+
+  return (
+    <span ref={ref}>
+      {value}
+      {suffix}
+    </span>
+  );
+}
 
 function HomePage() {
   const baseUrl = import.meta.env.BASE_URL;
@@ -157,23 +204,46 @@ function HomePage() {
                 </Link>
               </article>
             ))}
-            <article className="service-card service-card-modern service-cta-card">
-              <h3>Need a Custom Global Solution?</h3>
-              <p>
-                Talk to our corporate team for a tailored strategy across business setup, trade,
-                technology and investment.
-              </p>
-              <ul className="service-mini-list">
-                <li>Dedicated international consultation</li>
-                <li>Structured expansion roadmap</li>
-              </ul>
-              <div className="service-cta-actions">
-                <Link className="service-link-btn" to="/contact">
-                  Get Consultation
-                </Link>
-                <Link className="service-link-btn secondary" to="/services/investment-funding">
-                  Investor Desk
-                </Link>
+            <article className="service-card service-card-modern service-cta-card service-cta-wide">
+              <div className="service-cta-main">
+                <h3>Need a Custom Global Solution?</h3>
+                <p>
+                  Talk to our corporate team for a tailored strategy across business setup, trade,
+                  technology and investment.
+                </p>
+                <ul className="service-mini-list">
+                  <li>Dedicated international consultation</li>
+                  <li>Structured expansion roadmap</li>
+                  <li>Cross-border legal and compliance planning</li>
+                </ul>
+                <div className="service-cta-actions">
+                  <Link className="service-link-btn" to="/contact">
+                    Get Consultation
+                  </Link>
+                  <Link className="service-link-btn secondary" to="/services/investment-funding">
+                    Investor Desk
+                  </Link>
+                </div>
+              </div>
+              <div className="service-cta-side">
+                <article>
+                  <strong>
+                    <CountUp end={48} suffix="h" />
+                  </strong>
+                  <span>Strategy Response Window</span>
+                </article>
+                <article>
+                  <strong>
+                    <CountUp end={5} suffix="+" />
+                  </strong>
+                  <span>Execution Across Priority Markets</span>
+                </article>
+                <article>
+                  <strong>
+                    <CountUp end={99} suffix="%" />
+                  </strong>
+                  <span>Governed Frameworks for Safer Growth</span>
+                </article>
               </div>
             </article>
           </div>

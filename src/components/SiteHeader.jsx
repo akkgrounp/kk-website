@@ -20,7 +20,7 @@ function SiteHeader() {
     <header className={`site-header ${isScrolled ? "scrolled" : ""}`}>
       <div className="container nav-wrap">
         <Link to="/" className="logo" onClick={closeMenu}>
-          <img src={`${baseUrl}logo.png.jpeg`} alt="KK Group of Companies logo" className="logo-mark" />
+          <img src={`${baseUrl}logo.png`} alt="KK Group of Companies logo" className="logo-mark" />
           <span className="logo-text">
             <strong>KK Group</strong>
             <em>of Companies</em>
