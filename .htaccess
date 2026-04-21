@@ -1,0 +1,19 @@
+DirectoryIndex index.php index.html
+
+RewriteEngine On
+RewriteBase /
+
+RewriteRule ^admin/logout/?$ index.php?page=admin-logout [QSA,L]
+RewriteRule ^admin/?$ index.php?page=admin [QSA,L]
+RewriteRule ^service/([a-z0-9-]+)/?$ index.php?page=service&slug=$1 [QSA,L]
+RewriteRule ^about/?$ index.php?page=about [QSA,L]
+RewriteRule ^services/?$ index.php?page=services [QSA,L]
+RewriteRule ^portfolio/?$ index.php?page=portfolio [QSA,L]
+RewriteRule ^blog/?$ index.php?page=blog [QSA,L]
+RewriteRule ^contact/?$ index.php?page=contact [QSA,L]
+RewriteRule ^investor-login/?$ index.php?page=investor-login [QSA,L]
+RewriteRule ^$ index.php?page=home [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

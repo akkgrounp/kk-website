@@ -1,0 +1,19 @@
+﻿KK Group cPanel Setup
+
+1. Upload this folder to your cPanel document root.
+   - If the domain uses a folder like public_html/akk, upload here.
+   - Include php-assets/ for the PHP backend styles and images.
+
+2. Create a MySQL database in cPanel.
+   - Add a database user.
+   - Give the user all privileges.
+
+3. Edit includes/config.php and set:
+   - DB_NAME
+   - DB_USER
+   - DB_PASS
+
+4. Import database.sql in phpMyAdmin.
+
+After that, open the domain in your browser.
+Admin login is created from the values in includes/config.php.
