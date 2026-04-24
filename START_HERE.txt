@@ -2,6 +2,7 @@
 
 1. Upload this folder to your cPanel document root.
    - If the domain uses a folder like public_html/akk, upload here.
+   - Upload php-assets/ and includes/ with it.
 
 2. Create a MySQL database in cPanel.
    - Add a database user.

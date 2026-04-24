@@ -3,6 +3,7 @@
 This repository contains the client handover version of the KK Group website for cPanel hosting.
 
 ## What this repo is
+- Frontend preview: Vercel-style static build in the repo root
 - Backend: PHP
 - Database: MySQL
 - Hosting target: cPanel shared hosting
@@ -14,7 +15,7 @@ Upload these files/folders into the domain document root, usually `public_html/a
 - `.htaccess`
 - `database.sql`
 - `START_HERE.txt`
-- `assets/`
+- `php-assets/`
 - `includes/`
 
 ## Remove from the old site folder

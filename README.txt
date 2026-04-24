@@ -13,7 +13,7 @@ Upload steps:
 4. Upload the full contents of this folder into your cPanel document root.
    - Usually public_html/akk
 5. Make sure index.php is in the root of that folder.
-6. Make sure the assets/ and includes/ folders are uploaded too.
+6. Make sure the php-assets/ and includes/ folders are uploaded too.
 
 Main pages:
 - /

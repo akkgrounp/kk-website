@@ -6,7 +6,7 @@ require_once __DIR__ . '/functions.php';
 if (!function_exists('kk_site_asset')) {
     function kk_site_asset(string $path): string
     {
-        return '/assets/' . ltrim($path, '/');
+        return '/php-assets/' . ltrim($path, '/');
     }
 }
 
