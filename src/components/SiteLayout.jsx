@@ -23,7 +23,7 @@ function SiteLayout() {
       </main>
       <SiteFooter />
       <WhatsAppButton
-        phoneNumber="+44 7757 674489"
+        phoneNumber="+44 7301 844128"
         message={DEFAULT_WHATSAPP_MESSAGE}
       />
       <LiveChatButton />

@@ -16,7 +16,7 @@ function SiteFooter() {
     {
       label: "WhatsApp",
       short: "WA",
-      href: buildWhatsAppUrl("+44 7757 674489", DEFAULT_WHATSAPP_MESSAGE),
+      href: buildWhatsAppUrl("+44 7301 844128", DEFAULT_WHATSAPP_MESSAGE),
     },
   ];
 
@@ -137,7 +137,7 @@ function SiteFooter() {
                 <strong>Email:</strong> Akkgroup130@gmail.com
               </p>
               <p>
-                <strong>Phone:</strong> +44 7757 674489
+                <strong>Phone:</strong> +44 7301 844128
               </p>
               <p>
                 <strong>Offices:</strong> Spain | UAE | UK | Pakistan
