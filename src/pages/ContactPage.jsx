@@ -67,7 +67,7 @@ function ContactPage() {
               international service coordination.
             </p>
             <div className="contact-hero-actions">
-              <a className="btn gold" href="https://wa.me/923185756022" target="_blank" rel="noreferrer">
+              <a className="btn gold" href="https://wa.me/447301844128" target="_blank" rel="noreferrer">
                 WhatsApp Direct
               </a>
               <Link className="btn outline-dark" to="/services/investment-funding">
@@ -127,11 +127,11 @@ function ContactPage() {
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>Phone</h3>
-                <p>03185756022</p>
+                <p>+44 7301 844128</p>
               </article>
               <article className="info-card contact-info-card contact-channel-card">
                 <h3>WhatsApp</h3>
-                <p>03185756022</p>
+                <p>+44 7301 844128</p>
               </article>
             </div>
           </div>
@@ -176,7 +176,7 @@ function ContactPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInput}
-                  placeholder="03185756022"
+                  placeholder="+44 7301 844128"
                 />
               </label>
               <label>

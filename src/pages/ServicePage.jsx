@@ -472,7 +472,7 @@ function ServicePage() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInput}
-                placeholder="03185756022"
+                placeholder="+44 7301 844128"
               />
             </label>
             <label>
