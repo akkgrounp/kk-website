@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 
 date_default_timezone_set('Asia/Karachi');
@@ -6,8 +6,8 @@ date_default_timezone_set('Asia/Karachi');
 const SITE_NAME = 'KK Group of Companies';
 const SITE_TAGLINE = 'Complete Business Solutions Worldwide';
 const SITE_EMAIL = 'Akkgroup130@gmail.com';
-const SITE_PHONE = '+44 7757 674489';
-const SITE_WHATSAPP = '+44 7757 674489';
+const SITE_PHONE = '+44 7301 844128';
+const SITE_WHATSAPP = '+44 7301 844128';
 const SITE_WHATSAPP_TEXT = 'Hello KK Group, I visited your website and would like more information about your services.';
 
 const DB_HOST = 'localhost';
